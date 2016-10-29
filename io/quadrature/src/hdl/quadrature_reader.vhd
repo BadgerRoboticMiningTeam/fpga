@@ -36,13 +36,13 @@ use IEEE.NUMERIC_STD.all;
 -- Need to develop quadrature, and get PWM output --
 ----------------------------------------------------
 entity quadrature_reader is
-    Port (
-        encode_a : in std_logic;
-        encode_b : in std_logic;
-        read_en : in std_logic;
+	Port (
+		encode_a : in std_logic;
+		encode_b : in std_logic;
+		read_en : in std_logic;
 		data_valid : out std_logic;
-        data_out : out std_logic_vector (63 downto 0);
-        clk : in std_logic;
+		data_out : out std_logic_vector (63 downto 0);
+		clk : in std_logic;
 		rst : in std_logic);
 end quadrature_reader;
 
@@ -50,9 +50,9 @@ architecture Behavioral of quadrature_reader is
 	-- data reading related signals
 	signal data_valid_next : std_logic;
 	signal data_out_reg, data_out_reg_next : std_logic_vector (63 downto 0);
-    -- registers to keep count of encoder channel signal edges
+	-- registers to keep count of encoder channel signal edges
 	signal encode_a_reg, encode_b_reg : std_logic;
-    signal displacement, displacement_next : std_logic_vector (63 downto 0);
+	signal displacement, displacement_next : std_logic_vector (63 downto 0);
 	-- convenience signals to enable using case statements in the process (all) block
 	signal enc_curr, enc_next : std_logic_vector (1 downto 0);
 begin
@@ -147,8 +147,8 @@ begin
 							displacement_next <= (others => '0');
 						end if;
 				end case;
-            when others =>
-                -- nothing
+			when others =>
+				-- nothing
 		end case;
 	end process;
 end Behavioral;

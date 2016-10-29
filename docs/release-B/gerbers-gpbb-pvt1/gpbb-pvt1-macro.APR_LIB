@@ -1,0 +1,9 @@
+G04:AMPARAMS|DCode=106|XSize=78.74mil|YSize=78.74mil|CornerRadius=19.69mil|HoleSize=0mil|Usage=FLASHONLY|Rotation=0.000|XOffset=0mil|YOffset=0mil|HoleType=Round|Shape=RoundedRectangle|*
+%AMROUNDEDRECTD106*
+21,1,0.07874,0.03937,0,0,0.0*
+21,1,0.03937,0.07874,0,0,0.0*
+1,1,0.03937,0.01969,-0.01969*
+1,1,0.03937,-0.01969,-0.01969*
+1,1,0.03937,-0.01969,0.01969*
+1,1,0.03937,0.01969,0.01969*
+%

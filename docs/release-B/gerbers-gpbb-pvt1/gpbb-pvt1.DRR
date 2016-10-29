@@ -1,0 +1,17 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: gpbb-pvt1.PcbDoc   10/27/2014  11:54:25 PM
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : gpbb-pvt1.TXT
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        15mil (0.381mm)          Round          130              16.80 Inch (426.69 mm)
+T2        35.43mil (0.89992mm)     Round          40               4.10 Inch (104.14 mm)
+T3        43.31mil (1.10007mm)     Round          2         NPTH   1.04 Inch (26.40 mm)
+T4        106.3mil (2.70002mm)     Round          3         NPTH   3.76 Inch (95.62 mm)
+---------------------------------------------------------------------------
+Totals                                            175              25.70 Inch (652.86 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:01
