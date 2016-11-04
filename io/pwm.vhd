@@ -60,8 +60,13 @@ begin
 			counter_next <= std_logic_vector(unsigned(counter) - 1);
 			pwm_signal_next <= pwm_signal;
 		else
-			counter_next <= std_logic_vector(to_unsigned(50, 16));
-			pwm_signal_next <= not pwm_signal;
+		      if ( pwm_signal = '0')then 
+			     counter_next <= width;
+			     pwm_signal_next <= not pwm_signal;
+              else
+                  counter_next <= std_logic_vector(50 - unsigned(width));
+                  pwm_signal_next <= not pwm_signal;
+              end if;
 		end if;
 	end process;
 end Behavioral;
