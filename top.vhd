@@ -43,52 +43,61 @@ architecture Behavioral of top is
     signal rst : std_logic;
     signal incr : std_logic;
     signal decr : std_logic;
-    signal wid, wid_next : std_logic_vector(15 downto 0);
-    signal incr_reg, decr_reg: std_logic; 
+    signal wid, wid_next : std_logic_vector(31 downto 0);
+    signal incr_reg, decr_reg: std_logic_vector(1 downto 0); 
+    signal pwm_signal : std_logic;
+	
     component pwm is
-    Port (
-            pwm_signal: out std_logic;
-            clock: in std_logic; 
-            width: in std_logic_vector(15 downto 0);
-            reset: in std_logic);
+    port (
+		pwm_signal: out std_logic;
+		clock: in std_logic; 
+		width: in std_logic_vector(31 downto 0);
+		reset: in std_logic);
     end component;
 begin
-    ibuf_sw : ibuf
-    port map (
-        i => sw(0),
-        o => rst);
+	rst <= sw(0);
+	
     ibuf_btn : ibuf
-     port map (
+    port map (
         i => btn(0),
         o => incr);
     ibuf_bnt1 : ibuf
     port map (
         i => btn(1),
         o => decr);
+    obuf_pwm : obuf
+    port map (
+        i => pwm_signal,
+        o => ck_io(0));
+    
     generator : pwm
-     port map (
-         pwm_signal => ck_io(0),
+    port map (
+        pwm_signal => pwm_signal,
         clock => CLK100MHZ,
         width => wid,
-        reset => sw(0));
-process (CLK100MHZ) begin
-                if (rising_edge(CLK100MHZ)) then
-                    if (rst = '1') then
-                        wid <= (others => '0');
-                    else
-                        wid <= wid_next;
-                    end if;
-                end if ;
-            end process;
+        reset => rst);
+	
+	process (CLK100MHZ) begin
+		if (rising_edge(CLK100MHZ)) then
+			if (rst = '1') then
+				wid <= x"00001000";
+			else
+				wid <= wid_next;
+			end if;
+			incr_reg(0) <= incr;
+			decr_reg(0) <= decr;
+			incr_reg(1) <= incr_reg(0);
+			decr_reg(1) <= decr_reg(0);
+		end if ;
+    end process;
             
     process (all) begin
         wid_next <= wid;
         
-        if (incr_reg /= incr and incr = '1' ) then 
-            wid_next <= std_logic_vector( unsigned(wid) + 1) ;
-        elsif (decr_reg /= decr and decr = '1') then
-            wid_next <= std_logic_vector(unsigned(wid) - 1);
+        if (incr_reg(1) = '0' and incr_reg(0) = '1') then
+            wid_next <= std_logic_vector(unsigned(wid) + 1000) ;
+        elsif (decr_reg(1) = '0' and decr_reg(0) = '1') then
+            wid_next <= std_logic_vector(unsigned(wid) - 1000);
         end if ;
     end process;
-
 end Behavioral;

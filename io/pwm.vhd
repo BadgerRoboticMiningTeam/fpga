@@ -32,21 +32,26 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity pwm is
-	Port (
+	port (
 		pwm_signal: out std_logic;
 		clock: in std_logic; 
-		width: in std_logic_vector(15 downto 0);
+		width: in std_logic_vector(31 downto 0);
 		reset: in std_logic);
 end pwm;
 
 architecture Behavioral of pwm is
-    signal counter, counter_next: std_logic_vector(15 downto 0);
+    signal counter, counter_next: std_logic_vector(31 downto 0);
     signal pwm_signal_next: std_logic;
+    signal width_constrained : std_logic_vector(31 downto 0);
 begin
+    width_constrained <=
+        std_logic_vector(to_unsigned(500000, 32)) when (unsigned(width) >= 500000) else
+        width;
+    
     process (clock) begin
 		if (rising_edge(clock)) then
 			if (reset = '1') then
-				counter <=( others => '0');
+				counter <= (others => '0');
 				pwm_signal <= '0';
 			else
 				counter <= counter_next;
@@ -60,13 +65,13 @@ begin
 			counter_next <= std_logic_vector(unsigned(counter) - 1);
 			pwm_signal_next <= pwm_signal;
 		else
-		      if ( pwm_signal = '0')then 
-			     counter_next <= width;
-			     pwm_signal_next <= not pwm_signal;
-              else
-                  counter_next <= std_logic_vector(50 - unsigned(width));
-                  pwm_signal_next <= not pwm_signal;
-              end if;
+            if (pwm_signal = '0') then
+                counter_next <= width_constrained;
+            else
+                counter_next <= std_logic_vector(500000 - unsigned(width_constrained));
+            end if;
+            
+            pwm_signal_next <= not pwm_signal;
 		end if;
 	end process;
 end Behavioral;
