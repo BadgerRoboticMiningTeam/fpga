@@ -34,23 +34,22 @@ use IEEE.NUMERIC_STD.ALL;
 entity pwm is
 	port (
 		pwm_signal: out std_logic;
-		clock: in std_logic; 
-		width: in std_logic_vector(31 downto 0);
-		reset: in std_logic);
+		period : in std_logic_vector(31 downto 0);
+		duty : in std_logic_vector(31 downto 0);
+		clk : in std_logic;
+		rst : in std_logic);
 end pwm;
 
 architecture Behavioral of pwm is
     signal counter, counter_next: std_logic_vector(31 downto 0);
     signal pwm_signal_next: std_logic;
-    signal width_constrained : std_logic_vector(31 downto 0);
+    signal duty_constrained : std_logic_vector(31 downto 0);
 begin
-    width_constrained <=
-        std_logic_vector(to_unsigned(500000, 32)) when (unsigned(width) >= 500000) else
-        width;
+    duty_constrained <= period when (unsigned(duty) >= unsigned(period)) else duty;
     
-    process (clock) begin
-		if (rising_edge(clock)) then
-			if (reset = '1') then
+    process (clk) begin
+		if (rising_edge(clk)) then
+			if (rst = '1') then
 				counter <= (others => '0');
 				pwm_signal <= '0';
 			else
@@ -66,9 +65,9 @@ begin
 			pwm_signal_next <= pwm_signal;
 		else
             if (pwm_signal = '0') then
-                counter_next <= width_constrained;
+                counter_next <= duty_constrained;
             else
-                counter_next <= std_logic_vector(500000 - unsigned(width_constrained));
+                counter_next <= std_logic_vector(unsigned(period) - unsigned(duty_constrained));
             end if;
             
             pwm_signal_next <= not pwm_signal;
