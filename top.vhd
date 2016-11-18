@@ -35,6 +35,7 @@ entity top is
     Port (
         CLK100MHZ :in std_logic;
         sw: in std_logic_vector(0 downto 0);
+        led : out std_logic_vector(0 downto 0);
         btn: in std_logic_vector (0 to 1);
         ck_io: out std_logic_vector (0 downto 0));
 end top;
@@ -50,12 +51,14 @@ architecture Behavioral of top is
     component pwm is
     port (
 		pwm_signal: out std_logic;
-		clock: in std_logic; 
-		width: in std_logic_vector(31 downto 0);
-		reset: in std_logic);
+		period : in std_logic_vector(31 downto 0);
+		duty: in std_logic_vector(31 downto 0); 
+		clk: in std_logic;
+		rst: in std_logic);
     end component;
 begin
 	rst <= sw(0);
+	led(0) <= rst;
 	
     ibuf_btn : ibuf
     port map (
@@ -73,14 +76,15 @@ begin
     generator : pwm
     port map (
         pwm_signal => pwm_signal,
-        clock => CLK100MHZ,
-        width => wid,
-        reset => rst);
+        period => std_logic_vector(to_unsigned(200000, 32)),
+        duty => wid,
+        clk => CLK100MHZ,
+        rst => rst);
 	
 	process (CLK100MHZ) begin
 		if (rising_edge(CLK100MHZ)) then
 			if (rst = '1') then
-				wid <= x"00001000";
+				wid <= std_logic_vector(to_unsigned(150000, 32));
 			else
 				wid <= wid_next;
 			end if;
