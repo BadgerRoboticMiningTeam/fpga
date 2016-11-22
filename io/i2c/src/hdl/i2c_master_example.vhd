@@ -242,6 +242,6 @@ BEGIN
       
   --set scl and sda outputs
   scl <= '0' WHEN (scl_ena = '1' AND scl_clk = '0') ELSE 'Z';
-  sda <= '0' WHEN sda_ena_n = '0' ELSE 'Z';
+  sda <= '0' WHEN sda_ena_n = '0' or state = mstr_ack ELSE 'Z';
   
 END logic;
