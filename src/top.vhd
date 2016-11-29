@@ -36,24 +36,24 @@ entity top is
         CLK100MHZ :in std_logic;
         sw : in std_logic_vector(0 downto 0);
         
-        --led0_b : out std_logic;
+        led0_b : out std_logic;
         led0_g : out std_logic;
         led0_r : out std_logic;
         
-        --led1_b : out std_logic;
+        led1_b : out std_logic;
         led1_g : out std_logic;
         led1_r : out std_logic;
         
-        --led2_b : out std_logic;
+        led2_b : out std_logic;
         led2_g : out std_logic;
         led2_r : out std_logic;
         
-        --led3_b : out std_logic;
+        led3_b : out std_logic;
         led3_g : out std_logic;
         led3_r : out std_logic;
         
         led : out std_logic_vector(3 downto 0);
-        btn: in std_logic_vector (0 to 1);
+        btn: in std_logic_vector (3 downto 0);
         ck_io: out std_logic_vector (0 downto 0);
         ck_scl : inout std_logic;
         ck_sda : inout std_logic);
@@ -65,7 +65,7 @@ architecture Behavioral of top is
     -- LEDs
     signal led_next : std_logic_vector(3 downto 0);
 	
-	signal state_debug_breakout, state_debug_breakout_prev_reg : std_logic_vector(3 downto 0);
+	--signal state_debug_breakout, state_debug_breakout_prev_reg : std_logic_vector(3 downto 0);
     
     -- PWM demo signals
     signal incr : std_logic;
@@ -110,8 +110,8 @@ architecture Behavioral of top is
 			scl : inout std_logic;
 			sda : inout std_logic;
 			
-			state_debug_breakout : out std_logic_vector(3 downto 0);
-			state_debug_breakout_prev_reg : out std_logic_vector(3 downto 0);
+			--state_debug_breakout : out std_logic_vector(3 downto 0);
+			--state_debug_breakout_prev_reg : out std_logic_vector(3 downto 0);
 			
 			wr_data : in std_logic_vector(7 downto 0);
 			wr_acked : out std_logic;
@@ -119,7 +119,6 @@ architecture Behavioral of top is
 			rd_valid : out std_logic;
 			
 			slave_selected : out std_logic;
-			io_busy : out std_logic;
 			
 			clk : in std_logic;
 			rst : in std_logic);
@@ -145,20 +144,20 @@ begin
 	ck_scl <= scl;
 	ck_sda <= sda;
 	
-	led0_r <= state_debug_breakout(0);
-	led0_g <= state_debug_breakout_prev_reg(0);
+	led0_r <= rst or pwm_signal;
+	led0_g <= pwm_signal;
 	--led0_b <= '1' when scl = '1' else '0';
 	
-	led1_r <= state_debug_breakout(1);
-	led1_g <= state_debug_breakout_prev_reg(1);
+	--led1_r <= state_debug_breakout(1);
+	--led1_g <= state_debug_breakout_prev_reg(1);
     --led1_b <= '1' when sda = '1' else '0';
 	
-	led2_r <= state_debug_breakout(2);
-	led2_g <= state_debug_breakout_prev_reg(2);
+	--led2_r <= state_debug_breakout(2);
+	--led2_g <= state_debug_breakout_prev_reg(2);
     --led2_b <= '1' when sda = '1' else '0';
 	
-	led3_r <= state_debug_breakout(3);
-	led3_g <= state_debug_breakout_prev_reg(3);
+	--led3_r <= state_debug_breakout(3);
+	--led3_g <= state_debug_breakout_prev_reg(3);
     --led3_b <= '1' when sda = '1' else '0';
 	
     generator : pwm
@@ -191,14 +190,13 @@ begin
 	port map (
 		scl => scl,
 		sda => sda,
-		state_debug_breakout => state_debug_breakout,
-		state_debug_breakout_prev_reg => state_debug_breakout_prev_reg,
+		--state_debug_breakout => state_debug_breakout,
+		--state_debug_breakout_prev_reg => state_debug_breakout_prev_reg,
 		wr_data => i2c_tx_data,
 		wr_acked => open,
 		rd_data => i2c_rx_data,
 		rd_valid => i2c_rx_data_rdy,
 		slave_selected => open,
-		io_busy => open,
 		clk => CLK100MHZ,
 		rst => rst
 	);
