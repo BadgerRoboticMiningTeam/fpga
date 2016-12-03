@@ -54,9 +54,12 @@ entity top is
         
         led : out std_logic_vector(3 downto 0);
         btn: in std_logic_vector (3 downto 0);
-        ck_io: out std_logic_vector (0 downto 0);
+        ck_io: inout std_logic_vector (2 downto 0);
         ck_scl : inout std_logic;
-        ck_sda : inout std_logic);
+        ck_sda : inout std_logic;
+        
+        uart_rxd_out : out std_logic;
+        uart_txd_in : in std_logic);
 end top;
 
 architecture Behavioral of top is
@@ -79,6 +82,14 @@ architecture Behavioral of top is
     signal i2c_busy, i2c_tx_done, i2c_rx_data_rdy : std_logic;
     signal i2c_rx_data : std_logic_vector(7 downto 0);
     signal i2c_tx_data, i2c_tx_data_next : std_logic_vector(7 downto 0);
+	
+	-- quadrature encoder signals
+	signal motor0_encode_a, motor0_encode_b : std_logic;
+	signal quadr0_rd_en, quadr0_rd_valid : std_logic;
+	signal quadr0_rd_data : std_logic_vector(63 downto 0);
+	signal counter, counter_next : std_logic_vector(63 downto 0);
+	
+	signal uart_txd_start : std_logic;
 	
     component pwm is
     port (
@@ -123,6 +134,26 @@ architecture Behavioral of top is
 			clk : in std_logic;
 			rst : in std_logic);
 	end component;
+	
+	component quadrature_reader is
+		port (
+			encode_a : in std_logic;
+			encode_b : in std_logic;
+			read_en : in std_logic;
+			data_valid : out std_logic;
+			data_out : out std_logic_vector(63 downto 0);
+			clk : in std_logic;
+			rst : in std_logic);
+	end component;
+	
+	component async_transmitter is
+		port (
+			TxD_start : in std_logic;
+			TxD_data : in std_logic_vector(7 downto 0);
+			TxD : out std_logic;
+			TxD_busy : out std_logic;
+			clk : in std_logic);
+	end component;
 begin
 	ibuf_sw : ibuf
 	port map (
@@ -140,6 +171,14 @@ begin
     port map (
         i => pwm_signal,
         o => ck_io(0));
+	ibuf_quad0a : ibuf
+	port map (
+		i => ck_io(1),
+		o => motor0_encode_a);
+	ibuf_quad0b : ibuf
+	port map (
+		i => ck_io(2),
+		o => motor0_encode_b);
 	
 	ck_scl <= scl;
 	ck_sda <= sda;
@@ -167,6 +206,17 @@ begin
         duty => wid,
         clk => CLK100MHZ,
         rst => rst
+	);
+	
+	quadr_rd_0 : quadrature_reader
+	port map (
+		encode_a => motor0_encode_a,
+		encode_b => motor0_encode_b,
+		read_en => quadr0_rd_en,
+		data_valid => quadr0_rd_valid,
+		data_out => quadr0_rd_data,
+		clk => CLK100MHZ,
+		rst => rst
 	);
 	
 	-- i2c : i2c_slave_fsm
@@ -201,16 +251,27 @@ begin
 		rst => rst
 	);
 	
+	uart_tx : async_transmitter
+	port map (
+		TxD_start => uart_txd_start,
+		TxD_data => quadr0_rd_data(7 downto 0),
+		TxD => uart_rxd_out,
+		TxD_busy => open,
+		clk => CLK100MHZ
+	);
+	
 	process (CLK100MHZ) begin
 		if (rising_edge(CLK100MHZ)) then
 			if (rst = '1') then
 				wid <= std_logic_vector(to_unsigned(150000, 32));
 				led <= (others => '1');
 				i2c_tx_data <= x"F0";
+				counter <= std_logic_vector(to_unsigned(100000000, 64));
 			else
 				wid <= wid_next;
 			    led <= led_next;
 			    i2c_tx_data <= i2c_tx_data_next;
+				counter <= counter_next;
 			end if;
 			
 			incr_reg(0) <= incr;
@@ -224,6 +285,14 @@ begin
         wid_next <= wid;
         led_next <= led;
         i2c_tx_data_next <= i2c_tx_data;
+		
+		if (unsigned(counter) = 0) then
+			counter_next <= std_logic_vector(to_unsigned(100000000, 64));
+			quadr0_rd_en <= '1';
+		else
+			counter_next <= std_logic_vector(unsigned(counter) - 1);
+			quadr0_rd_en <= '0';
+		end if;
         
 		-- PWM buttons demo
         if (incr_reg(1) = '0' and incr_reg(0) = '1') then
@@ -248,5 +317,12 @@ begin
                 when others =>
             end case;
         end if;
+		
+		-- Quadrature demo
+		if (quadr0_rd_valid = '1') then
+			uart_txd_start <= '1';
+		else
+			uart_txd_start <= '0';
+		end if;
     end process;
 end Behavioral;
